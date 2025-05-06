@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DeepTumorNet Lung Cancer Classification</title>
+
+  <!-- Favicon or Shortcut Icon -->
+  <link rel="shortcut icon"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABCUlEQVRYR+3XsQ3CMBREUZOEsgEO4Q2UAFbcACpgAD2EEjmEJlgpgC/wMbWV/GwjM1eCvKBySOm5kx6DEQDga6nYCP4NMImAaWf3sh4/JsHukJUBWNJZ94sJuS+rPPJeJJbkfRak5sTCs/k4BmUGBCbERxwdTA5/EJqKYIOymCi+j9yi0k2qRV9P9W/kQP0HPWUzr9mQKboMTeGEyu7qEEqYiPRyY4PxX0vu4sihAWfA439rdnAmwXF8CYD1/h2cEMUM+++++QpKD20LF2yCwhzYCW9FS7Kl4vrQSRkFf5Ikc9Wu34Hrv9kJGkGS0XGjIX+nUqChY9jcAAAAASUVORK5CYII=" />
+
+  <!-- Bootstrap 4 CSS -->
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        crossorigin="anonymous"/>
+
+  <style>
+    /* Animated gradient background */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffd1ff, #fcb69f);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    @keyframes gradientBG {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Fade-in animation for main content */
+    .fade-in {
+      animation: fadeIn 1.2s ease forwards;
+      opacity: 0; /* Start invisible */
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .navbar {
+      background-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: #1b2d6b !important;
+      display: flex;
+      align-items: center;
+    }
+    .navbar-brand img {
+      height: 40px;
+      margin-right: 10px;
+    }
+    .tagline {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .container {
+      margin-top: 30px;
+      margin-bottom: 30px;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    h3 {
+      color: #1b2d6b;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .image-container {
+      height: 300px; 
+      width: 300px; 
+      border: 1px solid #1b2d6b;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      margin: 0 auto 15px auto;
+      position: relative;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .image-container img {
+      max-height: 290px; 
+      max-width: 290px;
+      display: none;
+      transition: transform 0.4s;
+    }
+    .image-container img:hover {
+      transform: scale(1.03);
+    }
+
+    .results-container {
+      border: 1px solid #dedede;
+      min-height: 200px;
+      padding: 15px;
+      overflow: auto;
+      background-color: #fff;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    /* Loading overlay */
+    #loading {
+      position: fixed;
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+      height: 100%;
+      z-index: 999999;
+      display: none;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #363e75;
+      border-radius: 50%;
+      width: 60px; 
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%);
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .btn-primary,
+    .btn-success {
+      margin-right: 5px;
+      border-radius: 20px;
+    }
+    #video {
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Nav/Logo Section -->
+  <nav class="navbar navbar-expand-lg mb-2">
+    <a class="navbar-brand" href="#">
+      <!-- Replace with your actual logo below -->
+      
+    </a>
+    <span class="tagline ml-2">DeepTumorNet Lung Cancer Classification</span>
+  </nav>
+
+  <div class="container fade-in">
+    <h3>DeepTumorNet Lung Cancer Classification</h3>
+
+    <div class="row justify-content-center">
+      <!-- Left Side: Image Input/Preview -->
+      <div class="col-md-5 d-flex flex-column align-items-center">
+        <div class="image-container">
+          <video autoplay id="video" 
+                 poster="https://img.freepik.com/free-vector/group-young-people-posing-photo_52683-18824.jpg?size=338&ext=jpg">
+          </video>
+          <img src="" id="photo" alt="Preview Image" />
+          <canvas style="display:none;" id="canvas"></canvas>
+        </div>
+
+        <div class="mb-2 text-center">
+          <button type="button" class="btn btn-primary" id="uploadBtn">Upload Image</button>
+          <button type="button" class="btn btn-success" id="predictBtn">Predict</button>
+        </div>
+        <form>
+          <input name="upload" type="file" id="fileInput" 
+                 style="position:absolute; top:-5000px; left:-5000px;" />
+          <input type="hidden" id="url" value="../predict"/>
+        </form>
+      </div>
+
+      <!-- Right Side: Results/Logs -->
+      <div class="col-md-5">
+        <h5>Prediction Results</h5>
+        <div class="results-container" id="results">
+          <p class="text-muted">No predictions yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading">
+    <div class="loader"></div>
+  </div>
+
+  <!-- JS dependencies -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script 
+    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" 
+    crossorigin="anonymous">
+  </script>
+  <script 
+    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" 
+    crossorigin="anonymous">
+  </script>
+
+  <script>
+    var base64Data = "";
+
+    function sendRequest(base64Data) {
+      if (!base64Data) {
+        $("#results").html("<p class='text-danger'>No image data to send!</p>");
+        return;
+      }
+
+      $("#loading").show();
+      let url = $("#url").val();
+
+      $.ajax({
+        url: url,
+        type: "POST",
+        crossDomain: true,
+        contentType: "application/json",
+        data: JSON.stringify({ image: base64Data }),
+        success: function(res) {
+          $("#loading").hide();
+          $("#results").empty();
+
+          // Display text result
+          $("#results").append(
+            `<pre>${JSON.stringify(res[0], null, 2)}</pre>`
+          );
+
+          // Optionally display returned image if present
+          if (res[1] && res[1].image && res[1].image.length > 100) {
+            $("#results").append(
+              `<img src="data:image/jpeg;base64,${res[1].image}" 
+                     style="max-width:200px; margin-top:10px; border-radius:8px;" />`
+            );
+          }
+        },
+        error: function(err) {
+          $("#loading").hide();
+          $("#results").html("<p class='text-danger'>An error occurred: " + err.statusText + "</p>");
+        }
+      });
+    }
+
+    $(document).ready(function() {
+      // Hide loading spinner at start
+      $("#loading").hide();
+
+      // Upload button triggers the hidden file input
+      $("#uploadBtn").click(function() {
+        $("#fileInput").click();
+      });
+
+      // When file input changes, read the file as base64
+      $("#fileInput").change(function() {
+        if (this.files && this.files[0]) {
+          let reader = new FileReader();
+          reader.onload = function(evt) {
+            let url = evt.target.result;
+            let img = new Image();
+            img.crossOrigin = 'Anonymous';
+
+            img.onload = function() {
+              let canvas = document.createElement('CANVAS');
+              let ctx = canvas.getContext('2d');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+              base64Data = canvas
+                .toDataURL('image/jpeg', 1.0)
+                .replace(/^data:image.+;base64,/, '');
+              canvas = null;
+            };
+            img.src = url;
+
+            // Show preview in the UI
+            $("#video").hide();
+            $("#photo").attr("src", url).show();
+          };
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+
+      // Predict button calls the function to send request
+      $("#predictBtn").click(function() {
+        sendRequest(base64Data);
+      });
+    });
+  </script>
+</body>
+</html>
